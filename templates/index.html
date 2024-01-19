@@ -9,7 +9,7 @@
     <h1>Emotion Detection Demo</h1>
     <video id="videoElement" autoplay></video>
     <canvas id="canvasElement" style="display:none;"></canvas>
-    <div id="emotionLabel"></div>
+    <div id="emotionLabel">test</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -25,7 +25,7 @@
 
                         const eventSource = new EventSource('/video_feed');
                         eventSource.onmessage = (event) => {
-                            const emotionLabel = event.data;
+                            const emotionLabel = event.data.trim(); // Remove leading/trailing whitespaces
                             emotionLabelElement.textContent = `Detected Emotion: ${emotionLabel}`;
                         };
 
@@ -42,7 +42,7 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                console.log('Emotion Prediction:', data);
+                                console.log('Emotion Prediction:', data.emotion_label);
                             })
                             .catch(error => {
                                 console.error('Error predicting emotion:', error);
