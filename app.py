@@ -1,6 +1,4 @@
-# app.py
-
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, jsonify
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
@@ -17,7 +15,8 @@ def detect_emotion(frame):
     reshaped = np.reshape(normalized, (1, 48, 48, 1))
     emotion_prediction = model.predict(reshaped)
     emotion_label = np.argmax(emotion_prediction)
-    return jsonify(emotion_label)
+    emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+    return emotion_labels[emotion_label]
 
 @app.route('/')
 def index():
@@ -30,11 +29,12 @@ def generate_frames():
         if not success:
             break
         else:
-            yield detect_emotion(frame)
+            emotion_label = detect_emotion(frame)
+            yield f"data:{emotion_label}\n\n"
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
     app.run(debug=True)
