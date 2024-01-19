@@ -7,24 +7,47 @@
 </head>
 <body>
     <h1>Emotion Detection Demo</h1>
-    <div id="emotionLabel"></div>
     <video id="videoElement" autoplay></video>
+    <canvas id="canvasElement" style="display:none;"></canvas>
+    <div id="emotionLabel"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             const emotionLabelElement = document.getElementById('emotionLabel');
             const video = document.getElementById('videoElement');
-    
+            const canvas = document.getElementById('canvasElement');
+            const context = canvas.getContext('2d');
+
             if (navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then((stream) => {
                         video.srcObject = stream;
-    
+
                         const eventSource = new EventSource('/video_feed');
                         eventSource.onmessage = (event) => {
                             const emotionLabel = event.data;
                             emotionLabelElement.textContent = `Detected Emotion: ${emotionLabel}`;
                         };
+
+                        // Capture frames from the video stream and send to the server
+                        setInterval(() => {
+                            context.drawImage(video, 0, 0, 640, 480);
+                            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+                            fetch('/predict_emotion', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ image_data: imageData }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Emotion Prediction:', data);
+                            })
+                            .catch(error => {
+                                console.error('Error predicting emotion:', error);
+                            });
+                        }, 1000);  // Adjust the interval as needed
                     })
                     .catch((error) => {
                         console.error('Error accessing camera:', error);
@@ -33,6 +56,6 @@
                 console.error('getUserMedia is not supported');
             }
         });
-    </script>   
+    </script>
 </body>
 </html>

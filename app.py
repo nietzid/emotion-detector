@@ -1,5 +1,6 @@
-from flask import Flask, render_template, Response, jsonify
+from flask import Flask, render_template, Response, request, jsonify
 import cv2
+import base64
 import numpy as np
 from tensorflow.keras.models import load_model
 
@@ -35,6 +36,21 @@ def index():
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='text/event-stream')
+
+@app.route('/predict_emotion', methods=['POST'])
+def predict_emotion():
+    # Get image data from the request
+    image_data = request.json.get('image_data')
+    
+    # Decode base64 image and convert to NumPy array
+    decoded_image = base64.b64decode(image_data.split(',')[1])
+    nparr = np.frombuffer(decoded_image, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Perform your emotion prediction here using a pre-trained model
+    emotion_label = detect_emotion(img)
+    
+    return jsonify({'emotion_label': emotion_label})
 
 if __name__ == '__main__':
     app.run(debug=True)
