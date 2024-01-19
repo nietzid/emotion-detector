@@ -14,12 +14,12 @@
         document.addEventListener('DOMContentLoaded', (event) => {
             const emotionLabelElement = document.getElementById('emotionLabel');
             const video = document.getElementById('videoElement');
-
+    
             if (navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then((stream) => {
                         video.srcObject = stream;
-
+    
                         const eventSource = new EventSource('/video_feed');
                         eventSource.onmessage = (event) => {
                             const emotionLabel = event.data;
@@ -33,6 +33,6 @@
                 console.error('getUserMedia is not supported');
             }
         });
-    </script>
+    </script>   
 </body>
 </html>

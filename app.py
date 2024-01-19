@@ -18,10 +18,6 @@ def detect_emotion(frame):
     emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
     return emotion_labels[emotion_label]
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 def generate_frames():
     cap = cv2.VideoCapture(0)
     while True:
@@ -30,7 +26,11 @@ def generate_frames():
             break
         else:
             emotion_label = detect_emotion(frame)
-            yield f"data:{emotion_label}\n\n"
+            yield f"data: {emotion_label}\n\n"
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/video_feed')
 def video_feed():
