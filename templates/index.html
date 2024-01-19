@@ -3,19 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Access</title>
+    <title>Emotion Detection</title>
 </head>
 <body>
-    <h1>Camera Access Demo</h1>
+    <h1>Emotion Detection Demo</h1>
     <video id="videoElement" autoplay></video>
+    <canvas id="canvasElement" style="display:none;"></canvas>
+
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const context = canvas.getContext('2d');
 
             if (navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then((stream) => {
                         video.srcObject = stream;
+
+                        setInterval(() => {
+                            context.drawImage(video, 0, 0, 640, 480);
+                            const imageData = context.getImageData(0, 0, 640, 480);
+                            const data = imageData.data;
+
+                            // Send image data to the server for emotion prediction
+                            fetch('/detect_emotion', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ image_data: data }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Emotion Prediction:', data);
+                            })
+                            .catch(error => {
+                                console.error('Error predicting emotion:', error);
+                            });
+
+                        }, 1000);  // Adjust the interval as needed
                     })
                     .catch((error) => {
                         console.error('Error accessing camera:', error);

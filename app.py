@@ -17,11 +17,7 @@ def detect_emotion(frame):
     reshaped = np.reshape(normalized, (1, 48, 48, 1))
     emotion_prediction = model.predict(reshaped)
     emotion_label = np.argmax(emotion_prediction)
-    cv2.putText(frame, f'Emotion: {emotion_label}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    ret, buffer = cv2.imencode('.jpg', frame)
-    frame = buffer.tobytes()
-    return (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    return jsonify(emotion_label)
 
 @app.route('/')
 def index():
